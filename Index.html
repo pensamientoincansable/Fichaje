@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telepizza - Registro de Jornadas</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        body {
+            background-color: #D4001C;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo span {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background-color: white;
+            color: #D4001C;
+            padding: 5px 15px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        .selector, .telepizzero-section, .gerente-section, .registro-section {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .active {
+            display: flex;
+        }
+        
+        .btn {
+            background-color: white;
+            color: #D4001C;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        input {
+            padding: 15px;
+            width: 100%;
+            max-width: 300px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            text-align: center;
+            color: #D4001C;
+        }
+        
+        input:focus {
+            outline: 3px solid #FFC72C;
+        }
+        
+        .mensaje {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.1rem;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        th {
+            background-color: rgba(0, 0, 0, 0.3);
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .volver-btn {
+            margin-top: 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .volver-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .btn {
+                padding: 12px 30px;
+                font-size: 1rem;
+            }
+            
+            input {
+                max-width: 100%;
+            }
+            
+            th, td {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>Telepizza</h1>
+            <span>Registro de Jornadas</span>
+        </div>
+        
+        <!-- Selección de rol -->
+        <div class="selector active">
+            <h2>Selecciona tu rol</h2>
+            <button class="btn" id="btnTelepizzero">Telepizzero</button>
+            <button class="btn" id="btnGerente">Gerente</button>
+        </div>
+        
+        <!-- Sección para telepizzeros -->
+        <div class="telepizzero-section">
+            <h2>Registro de Jornada</h2>
+            <input type="text" id="dniInput" placeholder="Introduce tu DNI" maxlength="8">
+            <button class="btn" id="btnFichar">Fichar</button>
+            <div class="mensaje" id="mensajeTelepizzero"></div>
+            <button class="btn volver-btn" id="volverTelepizzero">Volver</button>
+        </div>
+        
+        <!-- Sección para gerente -->
+        <div class="gerente-section">
+            <h2>Acceso Gerente</h2>
+            <input type="password" id="passwordInput" placeholder="Contraseña">
+            <button class="btn" id="btnAcceder">Acceder</button>
+            <div class="mensaje" id="mensajeGerente"></div>
+            <button class="btn volver-btn" id="volverGerente">Volver</button>
+        </div>
+        
+        <!-- Sección de registros para gerente -->
+        <div class="registro-section">
+            <h2>Registro de Jornadas</h2>
+            <table id="tablaRegistros">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>DNI</th>
+                        <th>Entrada</th>
+                        <th>Salida</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Los registros se llenarán con JavaScript -->
+                </tbody>
+            </table>
+            <button class="btn volver-btn" id="volverRegistro">Volver</button>
+        </div>
+    </div>
+
+    <script>
+        // Datos de ejemplo
+        const telepizzeros = [
+            { dni: "20086762", nombre: "Noel" }
+        ];
+        
+        // Almacenamiento de registros
+        let registros = JSON.parse(localStorage.getItem('telepizza_registros')) || [];
+        
+        // Elementos del DOM
+        const selector = document.querySelector('.selector');
+        const telepizzeroSection = document.querySelector('.telepizzero-section');
+        const gerenteSection = document.querySelector('.gerente-section');
+        const registroSection = document.querySelector('.registro-section');
+        
+        const btnTelepizzero = document.getElementById('btnTelepizzero');
+        const btnGerente = document.getElementById('btnGerente');
+        const btnFichar = document.getElementById('btnFichar');
+        const btnAcceder = document.getElementById('btnAcceder');
+        const volverTelepizzero = document.getElementById('volverTelepizzero');
+        const volverGerente = document.getElementById('volverGerente');
+        const volverRegistro = document.getElementById('volverRegistro');
+        
+        const dniInput = document.getElementById('dniInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const mensajeTelepizzero = document.getElementById('mensajeTelepizzero');
+        const mensajeGerente = document.getElementById('mensajeGerente');
+        const tablaRegistros = document.querySelector('#tablaRegistros tbody');
+        
+        // Event Listeners
+        btnTelepizzero.addEventListener('click', () => {
+            selector.classList.remove('active');
+            telepizzeroSection.classList.add('active');
+        });
+        
+        btnGerente.addEventListener('click', () => {
+            selector.classList.remove('active');
+            gerenteSection.classList.add('active');
+        });
+        
+        btnFichar.addEventListener('click', fichar);
+        
+        btnAcceder.addEventListener('click', () => {
+            if (passwordInput.value === "369") {
+                gerenteSection.classList.remove('active');
+                registroSection.classList.add('active');
+                cargarRegistros();
+            } else {
+                mensajeGerente.textContent = "Contraseña incorrecta";
+            }
+        });
+        
+        volverTelepizzero.addEventListener('click', () => {
+            telepizzeroSection.classList.remove('active');
+            selector.classList.add('active');
+            dniInput.value = "";
+            mensajeTelepizzero.textContent = "";
+        });
+        
+        volverGerente.addEventListener('click', () => {
+            gerenteSection.classList.remove('active');
+            selector.classList.add('active');
+            passwordInput.value = "";
+            mensajeGerente.textContent = "";
+        });
+        
+        volverRegistro.addEventListener('click', () => {
+            registroSection.classList.remove('active');
+            selector.classList.add('active');
+        });
+        
+        // Función para fichar
+        function fichar() {
+            const dni = dniInput.value.trim();
+            
+            if (!dni) {
+                mensajeTelepizzero.textContent = "Por favor, introduce tu DNI";
+                return;
+            }
+            
+            // Buscar telepizzero por DNI
+            const telepizzero = telepizzeros.find(t => t.dni === dni);
+            
+            if (!telepizzero) {
+                mensajeTelepizzero.textContent = "DNI no registrado";
+                return;
+            }
+            
+            // Buscar si hay un registro activo (sin salida) para este DNI
+            const registroActivo = registros.find(r => r.dni === dni && !r.salida);
+            
+            const ahora = new Date();
+            const fechaHora = ahora.toLocaleString('es-ES');
+            
+            if (registroActivo) {
+                // Registrar salida
+                registroActivo.salida = fechaHora;
+                mensajeTelepizzero.textContent = `Salida registrada a las ${fechaHora}`;
+            } else {
+                // Registrar entrada
+                registros.push({
+                    nombre: telepizzero.nombre,
+                    dni: telepizzero.dni,
+                    entrada: fechaHora,
+                    salida: null
+                });
+                mensajeTelepizzero.textContent = `Entrada registrada a las ${fechaHora}`;
+            }
+            
+            // Guardar en localStorage
+            localStorage.setItem('telepizza_registros', JSON.stringify(registros));
+            
+            // Limpiar campo
+            dniInput.value = "";
+        }
+        
+        // Función para cargar registros en la tabla
+        function cargarRegistros() {
+            tablaRegistros.innerHTML = "";
+            
+            if (registros.length === 0) {
+                const fila = document.createElement('tr');
+                const celda = document.createElement('td');
+                celda.colSpan = 4;
+                celda.textContent = "No hay registros disponibles";
+                celda.style.textAlign = "center";
+                fila.appendChild(celda);
+                tablaRegistros.appendChild(fila);
+                return;
+            }
+            
+            // Ordenar registros por fecha de entrada (más reciente primero)
+            const registrosOrdenados = [...registros].sort((a, b) => {
+                return new Date(b.entrada) - new Date(a.entrada);
+            });
+            
+            registrosOrdenados.forEach(registro => {
+                const fila = document.createElement('tr');
+                
+                const celdaNombre = document.createElement('td');
+                celdaNombre.textContent = registro.nombre;
+                
+                const celdaDNI = document.createElement('td');
+                celdaDNI.textContent = registro.dni;
+                
+                const celdaEntrada = document.createElement('td');
+                celdaEntrada.textContent = registro.entrada;
+                
+                const celdaSalida = document.createElement('td');
+                celdaSalida.textContent = registro.salida || "Pendiente";
+                
+                fila.appendChild(celdaNombre);
+                fila.appendChild(celdaDNI);
+                fila.appendChild(celdaEntrada);
+                fila.appendChild(celdaSalida);
+                
+                tablaRegistros.appendChild(fila);
+            });
+        }
+        
+        // Permitir fichar con Enter
+        dniInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                fichar();
+            }
+        });
+        
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                btnAcceder.click();
+            }
+        });
+    </script>
+</body>
+</html>

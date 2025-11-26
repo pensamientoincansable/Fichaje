@@ -104,6 +104,11 @@
             color: white;
         }
         
+        .btn-success {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
         input, select {
             padding: 15px;
             width: 100%;
@@ -251,6 +256,76 @@
             justify-content: center;
         }
         
+        .geolocalizacion-info {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .geolocalizacion-info h3 {
+            margin-bottom: 10px;
+            color: #FFC72C;
+        }
+        
+        .mapa {
+            width: 100%;
+            height: 200px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .mapa iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .coordenadas {
+            font-family: monospace;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        
+        .ubicacion-aproximada {
+            font-size: 0.9rem;
+            color: #FFC72C;
+            margin-top: 5px;
+        }
+        
+        .permiso-geolocalizacion {
+            background-color: rgba(255, 199, 44, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            text-align: center;
+            border: 2px solid #FFC72C;
+        }
+        
+        .loader {
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         @media (max-width: 600px) {
             h1 {
                 font-size: 2rem;
@@ -300,9 +375,32 @@
         <!-- Sección para telepizzeros -->
         <div class="telepizzero-section">
             <h2>Registro de Jornada</h2>
-            <input type="text" id="dniInput" placeholder="Introduce tu DNI" maxlength="8">
-            <button class="btn" id="btnFichar">Fichar</button>
-            <div class="mensaje" id="mensajeTelepizzero"></div>
+            
+            <div class="permiso-geolocalizacion" id="permisoGeolocalizacion">
+                <h3>Permiso de Geolocalización Requerido</h3>
+                <p>Para registrar tu jornada, necesitamos acceder a tu ubicación precisa.</p>
+                <p>Por favor, permite el acceso a la ubicación cuando tu navegador lo solicite.</p>
+                <div class="loader" id="loaderGeolocalizacion"></div>
+                <button class="btn btn-success" id="btnActivarGeolocalizacion">Activar Geolocalización</button>
+            </div>
+            
+            <div id="contenidoFichaje" style="display: none;">
+                <input type="text" id="dniInput" placeholder="Introduce tu DNI" maxlength="8">
+                <button class="btn" id="btnFichar">Fichar</button>
+                
+                <div class="geolocalizacion-info" id="infoGeolocalizacion">
+                    <h3>Ubicación Detectada</h3>
+                    <div id="estadoGeolocalizacion">Obteniendo ubicación...</div>
+                    <div class="coordenadas" id="coordenadas"></div>
+                    <div class="ubicacion-aproximada" id="direccionAproximada"></div>
+                    <div class="mapa" id="mapaContainer">
+                        <div id="mapaPlaceholder">Mapa de ubicación</div>
+                    </div>
+                </div>
+                
+                <div class="mensaje" id="mensajeTelepizzero"></div>
+            </div>
+            
             <button class="btn volver-btn" id="volverTelepizzero">Volver</button>
         </div>
         
@@ -337,6 +435,7 @@
                             <th>Entrada</th>
                             <th>Salida</th>
                             <th>Horas Trabajadas</th>
+                            <th>Ubicación</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -412,6 +511,10 @@
         // Almacenamiento de ausencias
         let ausencias = JSON.parse(localStorage.getItem('telepizza_ausencias')) || [];
         
+        // Variables para geolocalización
+        let ubicacionActual = null;
+        let watchId = null;
+        
         // Elementos del DOM
         const selector = document.querySelector('.selector');
         const telepizzeroSection = document.querySelector('.telepizzero-section');
@@ -431,6 +534,16 @@
         const mensajeTelepizzero = document.getElementById('mensajeTelepizzero');
         const mensajeGerente = document.getElementById('mensajeGerente');
         const tablaRegistros = document.querySelector('#tablaRegistros tbody');
+        
+        // Elementos de geolocalización
+        const permisoGeolocalizacion = document.getElementById('permisoGeolocalizacion');
+        const contenidoFichaje = document.getElementById('contenidoFichaje');
+        const btnActivarGeolocalizacion = document.getElementById('btnActivarGeolocalizacion');
+        const loaderGeolocalizacion = document.getElementById('loaderGeolocalizacion');
+        const estadoGeolocalizacion = document.getElementById('estadoGeolocalizacion');
+        const coordenadasElement = document.getElementById('coordenadas');
+        const direccionAproximada = document.getElementById('direccionAproximada');
+        const mapaContainer = document.getElementById('mapaContainer');
         
         // Elementos de gestión de usuarios
         const btnAgregarUsuario = document.getElementById('btnAgregarUsuario');
@@ -469,6 +582,7 @@
         btnTelepizzero.addEventListener('click', () => {
             selector.classList.remove('active');
             telepizzeroSection.classList.add('active');
+            iniciarGeolocalizacion();
         });
         
         btnGerente.addEventListener('click', () => {
@@ -489,10 +603,13 @@
         });
         
         volverTelepizzero.addEventListener('click', () => {
+            detenerGeolocalizacion();
             telepizzeroSection.classList.remove('active');
             selector.classList.add('active');
             dniInput.value = "";
             mensajeTelepizzero.textContent = "";
+            permisoGeolocalizacion.style.display = 'block';
+            contenidoFichaje.style.display = 'none';
         });
         
         volverGerente.addEventListener('click', () => {
@@ -528,8 +645,126 @@
             });
         });
         
+        // Geolocalización
+        btnActivarGeolocalizacion.addEventListener('click', iniciarGeolocalizacion);
+        
+        // Función para iniciar la geolocalización
+        function iniciarGeolocalizacion() {
+            estadoGeolocalizacion.textContent = "Obteniendo ubicación...";
+            loaderGeolocalizacion.style.display = 'block';
+            
+            if (!navigator.geolocation) {
+                estadoGeolocalizacion.textContent = "La geolocalización no es compatible con este navegador";
+                loaderGeolocalizacion.style.display = 'none';
+                return;
+            }
+            
+            // Opciones para una mayor precisión
+            const opciones = {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            };
+            
+            // Solicitar permiso de geolocalización
+            navigator.geolocation.getCurrentPosition(
+                // Éxito
+                function(posicion) {
+                    loaderGeolocalizacion.style.display = 'none';
+                    ubicacionActual = {
+                        latitud: posicion.coords.latitude,
+                        longitud: posicion.coords.longitude,
+                        precision: posicion.coords.accuracy
+                    };
+                    
+                    // Mostrar información de ubicación
+                    mostrarInformacionUbicacion();
+                    
+                    // Iniciar seguimiento continuo de la ubicación
+                    watchId = navigator.geolocation.watchPosition(
+                        function(pos) {
+                            ubicacionActual = {
+                                latitud: pos.coords.latitude,
+                                longitud: pos.coords.longitude,
+                                precision: pos.coords.accuracy
+                            };
+                            mostrarInformacionUbicacion();
+                        },
+                        function(error) {
+                            console.error("Error en el seguimiento de ubicación:", error);
+                        },
+                        opciones
+                    );
+                    
+                    // Mostrar contenido de fichaje
+                    permisoGeolocalizacion.style.display = 'none';
+                    contenidoFichaje.style.display = 'flex';
+                },
+                // Error
+                function(error) {
+                    loaderGeolocalizacion.style.display = 'none';
+                    let mensajeError = "Error al obtener la ubicación: ";
+                    
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            mensajeError += "Permiso de ubicación denegado. Por favor, habilita la geolocalización en tu navegador.";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            mensajeError += "La información de ubicación no está disponible.";
+                            break;
+                        case error.TIMEOUT:
+                            mensajeError += "Tiempo de espera agotado al obtener la ubicación.";
+                            break;
+                        default:
+                            mensajeError += "Error desconocido.";
+                            break;
+                    }
+                    
+                    estadoGeolocalizacion.textContent = mensajeError;
+                },
+                opciones
+            );
+        }
+        
+        // Función para detener la geolocalización
+        function detenerGeolocalizacion() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            ubicacionActual = null;
+        }
+        
+        // Función para mostrar información de la ubicación
+        function mostrarInformacionUbicacion() {
+            if (!ubicacionActual) return;
+            
+            coordenadasElement.textContent = `Lat: ${ubicacionActual.latitud.toFixed(6)}, Lng: ${ubicacionActual.longitud.toFixed(6)}`;
+            estadoGeolocalizacion.textContent = "Ubicación obtenida correctamente";
+            direccionAproximada.textContent = `Precisión: ±${Math.round(ubicacionActual.precision)} metros`;
+            
+            // Mostrar mapa
+            mostrarMapa();
+        }
+        
+        // Función para mostrar el mapa
+        function mostrarMapa() {
+            if (!ubicacionActual) return;
+            
+            const { latitud, longitud } = ubicacionActual;
+            const urlMapa = `https://maps.google.com/maps?q=${latitud},${longitud}&z=17&output=embed`;
+            
+            mapaContainer.innerHTML = `<iframe src="${urlMapa}" allowfullscreen></iframe>`;
+        }
+        
         // Función para fichar
         function fichar() {
+            // Verificar que tenemos ubicación
+            if (!ubicacionActual) {
+                mensajeTelepizzero.textContent = "No se pudo obtener la ubicación. Por favor, activa la geolocalización.";
+                return;
+            }
+            
             const dni = dniInput.value.trim();
             
             if (!dni) {
@@ -560,6 +795,7 @@
             if (registroActivo) {
                 // Registrar salida
                 registroActivo.salida = horaActual;
+                registroActivo.ubicacionSalida = { ...ubicacionActual };
                 
                 // Calcular horas trabajadas
                 const entrada = new Date(`${fechaHoy} ${registroActivo.entrada}`);
@@ -579,7 +815,9 @@
                     fecha: fechaHoy,
                     entrada: horaActual,
                     salida: null,
-                    horasTrabajadas: null
+                    horasTrabajadas: null,
+                    ubicacionEntrada: { ...ubicacionActual },
+                    ubicacionSalida: null
                 });
                 mensajeTelepizzero.textContent = `Entrada registrada a las ${horaActual}`;
             }
@@ -598,7 +836,7 @@
             if (registros.length === 0) {
                 const fila = document.createElement('tr');
                 const celda = document.createElement('td');
-                celda.colSpan = 6;
+                celda.colSpan = 7;
                 celda.textContent = "No hay registros disponibles";
                 celda.style.textAlign = "center";
                 fila.appendChild(celda);
@@ -635,12 +873,21 @@
                 const celdaHoras = document.createElement('td');
                 celdaHoras.textContent = registro.horasTrabajadas || "-";
                 
+                const celdaUbicacion = document.createElement('td');
+                if (registro.ubicacionEntrada) {
+                    const enlaceMapa = `https://maps.google.com/?q=${registro.ubicacionEntrada.latitud},${registro.ubicacionEntrada.longitud}`;
+                    celdaUbicacion.innerHTML = `<a href="${enlaceMapa}" target="_blank" style="color: #FFC72C;">Ver ubicación</a>`;
+                } else {
+                    celdaUbicacion.textContent = "-";
+                }
+                
                 fila.appendChild(celdaNombre);
                 fila.appendChild(celdaDNI);
                 fila.appendChild(celdaFecha);
                 fila.appendChild(celdaEntrada);
                 fila.appendChild(celdaSalida);
                 fila.appendChild(celdaHoras);
+                fila.appendChild(celdaUbicacion);
                 
                 tablaRegistros.appendChild(fila);
             });

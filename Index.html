@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telepizza - Registro de Jornadas</title>
+    <title>Telepizza - Gestión de Jornadas</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap');
         
@@ -27,7 +27,7 @@
         
         .container {
             width: 100%;
-            max-width: 800px;
+            max-width: 1000px;
             background-color: rgba(0, 0, 0, 0.2);
             border-radius: 15px;
             padding: 30px;
@@ -59,7 +59,7 @@
             margin-top: 10px;
         }
         
-        .selector, .telepizzero-section, .gerente-section, .registro-section {
+        .selector, .telepizzero-section, .gerente-section, .registro-section, .gestion-usuarios-section {
             display: none;
             flex-direction: column;
             align-items: center;
@@ -94,7 +94,17 @@
             transform: translateY(1px);
         }
         
-        input {
+        .btn-secondary {
+            background-color: #FFC72C;
+            color: #D4001C;
+        }
+        
+        .btn-danger {
+            background-color: #FF5252;
+            color: white;
+        }
+        
+        input, select {
             padding: 15px;
             width: 100%;
             max-width: 300px;
@@ -105,7 +115,7 @@
             color: #D4001C;
         }
         
-        input:focus {
+        input:focus, select:focus {
             outline: 3px solid #FFC72C;
         }
         
@@ -158,6 +168,89 @@
             background-color: rgba(255, 255, 255, 0.3);
         }
         
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .tab-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn.active {
+            background-color: white;
+            color: #D4001C;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .form-group label {
+            font-weight: 700;
+            text-align: center;
+        }
+        
+        .usuario-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .ausencia-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        
+        .ausencia-marcada {
+            background-color: rgba(255, 82, 82, 0.3);
+        }
+        
+        .botones-accion {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+        
+        .btn-icon {
+            padding: 10px;
+            font-size: 1rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
         @media (max-width: 600px) {
             h1 {
                 font-size: 2rem;
@@ -168,13 +261,24 @@
                 font-size: 1rem;
             }
             
-            input {
+            input, select {
                 max-width: 100%;
             }
             
             th, td {
                 padding: 10px;
                 font-size: 0.9rem;
+            }
+            
+            .usuario-item, .ausencia-item {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .botones-accion {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
@@ -183,7 +287,7 @@
     <div class="container">
         <div class="logo">
             <h1>Telepizza</h1>
-            <span>Registro de Jornadas</span>
+            <span>Gestión de Jornadas</span>
         </div>
         
         <!-- Selección de rol -->
@@ -211,34 +315,102 @@
             <button class="btn volver-btn" id="volverGerente">Volver</button>
         </div>
         
-        <!-- Sección de registros para gerente -->
+        <!-- Sección de gestión para gerente -->
         <div class="registro-section">
-            <h2>Registro de Jornadas</h2>
-            <table id="tablaRegistros">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>DNI</th>
-                        <th>Entrada</th>
-                        <th>Salida</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Los registros se llenarán con JavaScript -->
-                </tbody>
-            </table>
+            <h2>Panel de Gerente</h2>
+            
+            <div class="tabs">
+                <div class="tab-btn active" data-tab="registros">Registros</div>
+                <div class="tab-btn" data-tab="usuarios">Gestión de Usuarios</div>
+                <div class="tab-btn" data-tab="ausencias">Control de Ausencias</div>
+            </div>
+            
+            <!-- Pestaña de Registros -->
+            <div class="tab-content active" id="registros-tab">
+                <h3>Registro de Jornadas</h3>
+                <table id="tablaRegistros">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>DNI</th>
+                            <th>Fecha</th>
+                            <th>Entrada</th>
+                            <th>Salida</th>
+                            <th>Horas Trabajadas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Los registros se llenarán con JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pestaña de Gestión de Usuarios -->
+            <div class="tab-content" id="usuarios-tab">
+                <h3>Gestión de Telepizzeros</h3>
+                
+                <div class="form-group">
+                    <label for="nuevoDni">DNI del nuevo Telepizzero</label>
+                    <input type="text" id="nuevoDni" placeholder="Introduce DNI" maxlength="8">
+                    
+                    <label for="nuevoNombre">Nombre del nuevo Telepizzero</label>
+                    <input type="text" id="nuevoNombre" placeholder="Introduce nombre">
+                    
+                    <button class="btn btn-secondary" id="btnAgregarUsuario">Agregar Telepizzero</button>
+                </div>
+                
+                <div id="listaUsuarios">
+                    <!-- Lista de usuarios se llenará con JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Pestaña de Control de Ausencias -->
+            <div class="tab-content" id="ausencias-tab">
+                <h3>Control de Ausencias y Faltas</h3>
+                
+                <div class="form-group">
+                    <label for="selectUsuarioAusencia">Seleccionar Telepizzero</label>
+                    <select id="selectUsuarioAusencia">
+                        <!-- Opciones se llenarán con JavaScript -->
+                    </select>
+                    
+                    <label for="fechaAusencia">Fecha de la ausencia</label>
+                    <input type="date" id="fechaAusencia">
+                    
+                    <label for="tipoAusencia">Tipo de incidencia</label>
+                    <select id="tipoAusencia">
+                        <option value="falta">Falta</option>
+                        <option value="ausencia_justificada">Ausencia Justificada</option>
+                        <option value="retraso">Retraso</option>
+                    </select>
+                    
+                    <label for="motivoAusencia">Motivo (opcional)</label>
+                    <input type="text" id="motivoAusencia" placeholder="Motivo de la ausencia">
+                    
+                    <button class="btn btn-secondary" id="btnRegistrarAusencia">Registrar Incidencia</button>
+                </div>
+                
+                <h4>Incidencia Registradas</h4>
+                <div id="listaAusencias">
+                    <!-- Lista de ausencias se llenará con JavaScript -->
+                </div>
+            </div>
+            
             <button class="btn volver-btn" id="volverRegistro">Volver</button>
         </div>
     </div>
 
     <script>
-        // Datos de ejemplo
-        const telepizzeros = [
+        // Datos iniciales
+        let telepizzeros = JSON.parse(localStorage.getItem('telepizza_usuarios')) || [
             { dni: "20086762", nombre: "Noel" }
         ];
         
         // Almacenamiento de registros
         let registros = JSON.parse(localStorage.getItem('telepizza_registros')) || [];
+        
+        // Almacenamiento de ausencias
+        let ausencias = JSON.parse(localStorage.getItem('telepizza_ausencias')) || [];
         
         // Elementos del DOM
         const selector = document.querySelector('.selector');
@@ -259,6 +431,39 @@
         const mensajeTelepizzero = document.getElementById('mensajeTelepizzero');
         const mensajeGerente = document.getElementById('mensajeGerente');
         const tablaRegistros = document.querySelector('#tablaRegistros tbody');
+        
+        // Elementos de gestión de usuarios
+        const btnAgregarUsuario = document.getElementById('btnAgregarUsuario');
+        const nuevoDni = document.getElementById('nuevoDni');
+        const nuevoNombre = document.getElementById('nuevoNombre');
+        const listaUsuarios = document.getElementById('listaUsuarios');
+        
+        // Elementos de control de ausencias
+        const selectUsuarioAusencia = document.getElementById('selectUsuarioAusencia');
+        const fechaAusencia = document.getElementById('fechaAusencia');
+        const tipoAusencia = document.getElementById('tipoAusencia');
+        const motivoAusencia = document.getElementById('motivoAusencia');
+        const btnRegistrarAusencia = document.getElementById('btnRegistrarAusencia');
+        const listaAusencias = document.getElementById('listaAusencias');
+        
+        // Tabs
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        // Establecer fecha actual por defecto
+        const hoy = new Date();
+        fechaAusencia.value = hoy.toISOString().split('T')[0];
+        
+        // Inicializar la aplicación
+        function init() {
+            cargarUsuarios();
+            cargarAusencias();
+            
+            // Si hay usuarios, cargar el select de ausencias
+            if (telepizzeros.length > 0) {
+                cargarSelectUsuarios();
+            }
+        }
         
         // Event Listeners
         btnTelepizzero.addEventListener('click', () => {
@@ -302,6 +507,27 @@
             selector.classList.add('active');
         });
         
+        // Gestión de usuarios
+        btnAgregarUsuario.addEventListener('click', agregarUsuario);
+        
+        // Control de ausencias
+        btnRegistrarAusencia.addEventListener('click', registrarAusencia);
+        
+        // Tabs
+        tabBtns.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                // Actualizar botones de pestaña
+                tabBtns.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Actualizar contenido de pestañas
+                tabContents.forEach(content => content.classList.remove('active'));
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+        
         // Función para fichar
         function fichar() {
             const dni = dniInput.value.trim();
@@ -320,24 +546,42 @@
             }
             
             // Buscar si hay un registro activo (sin salida) para este DNI
-            const registroActivo = registros.find(r => r.dni === dni && !r.salida);
-            
             const ahora = new Date();
-            const fechaHora = ahora.toLocaleString('es-ES');
+            const fechaHoy = ahora.toISOString().split('T')[0];
+            
+            const registroActivo = registros.find(r => 
+                r.dni === dni && 
+                r.fecha === fechaHoy && 
+                !r.salida
+            );
+            
+            const horaActual = ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
             
             if (registroActivo) {
                 // Registrar salida
-                registroActivo.salida = fechaHora;
-                mensajeTelepizzero.textContent = `Salida registrada a las ${fechaHora}`;
+                registroActivo.salida = horaActual;
+                
+                // Calcular horas trabajadas
+                const entrada = new Date(`${fechaHoy} ${registroActivo.entrada}`);
+                const salida = new Date(`${fechaHoy} ${horaActual}`);
+                const diffMs = salida - entrada;
+                const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+                const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                
+                registroActivo.horasTrabajadas = `${diffHrs}h ${diffMins}m`;
+                
+                mensajeTelepizzero.textContent = `Salida registrada a las ${horaActual}`;
             } else {
                 // Registrar entrada
                 registros.push({
                     nombre: telepizzero.nombre,
                     dni: telepizzero.dni,
-                    entrada: fechaHora,
-                    salida: null
+                    fecha: fechaHoy,
+                    entrada: horaActual,
+                    salida: null,
+                    horasTrabajadas: null
                 });
-                mensajeTelepizzero.textContent = `Entrada registrada a las ${fechaHora}`;
+                mensajeTelepizzero.textContent = `Entrada registrada a las ${horaActual}`;
             }
             
             // Guardar en localStorage
@@ -354,7 +598,7 @@
             if (registros.length === 0) {
                 const fila = document.createElement('tr');
                 const celda = document.createElement('td');
-                celda.colSpan = 4;
+                celda.colSpan = 6;
                 celda.textContent = "No hay registros disponibles";
                 celda.style.textAlign = "center";
                 fila.appendChild(celda);
@@ -362,9 +606,12 @@
                 return;
             }
             
-            // Ordenar registros por fecha de entrada (más reciente primero)
+            // Ordenar registros por fecha (más reciente primero) y por hora de entrada
             const registrosOrdenados = [...registros].sort((a, b) => {
-                return new Date(b.entrada) - new Date(a.entrada);
+                if (a.fecha === b.fecha) {
+                    return a.entrada < b.entrada ? 1 : -1;
+                }
+                return a.fecha < b.fecha ? 1 : -1;
             });
             
             registrosOrdenados.forEach(registro => {
@@ -376,19 +623,239 @@
                 const celdaDNI = document.createElement('td');
                 celdaDNI.textContent = registro.dni;
                 
+                const celdaFecha = document.createElement('td');
+                celdaFecha.textContent = registro.fecha;
+                
                 const celdaEntrada = document.createElement('td');
-                celdaEntrada.textContent = registro.entrada;
+                celdaEntrada.textContent = registro.entrada || "-";
                 
                 const celdaSalida = document.createElement('td');
-                celdaSalida.textContent = registro.salida || "Pendiente";
+                celdaSalida.textContent = registro.salida || "-";
+                
+                const celdaHoras = document.createElement('td');
+                celdaHoras.textContent = registro.horasTrabajadas || "-";
                 
                 fila.appendChild(celdaNombre);
                 fila.appendChild(celdaDNI);
+                fila.appendChild(celdaFecha);
                 fila.appendChild(celdaEntrada);
                 fila.appendChild(celdaSalida);
+                fila.appendChild(celdaHoras);
                 
                 tablaRegistros.appendChild(fila);
             });
+        }
+        
+        // Función para agregar un nuevo usuario
+        function agregarUsuario() {
+            const dni = nuevoDni.value.trim();
+            const nombre = nuevoNombre.value.trim();
+            
+            if (!dni || !nombre) {
+                alert("Por favor, completa todos los campos");
+                return;
+            }
+            
+            // Verificar si el DNI ya existe
+            if (telepizzeros.some(u => u.dni === dni)) {
+                alert("Ya existe un telepizzero con ese DNI");
+                return;
+            }
+            
+            // Agregar el nuevo usuario
+            telepizzeros.push({ dni, nombre });
+            
+            // Guardar en localStorage
+            localStorage.setItem('telepizza_usuarios', JSON.stringify(telepizzeros));
+            
+            // Actualizar la interfaz
+            cargarUsuarios();
+            cargarSelectUsuarios();
+            
+            // Limpiar campos
+            nuevoDni.value = "";
+            nuevoNombre.value = "";
+            
+            alert(`Telepizzero ${nombre} agregado correctamente`);
+        }
+        
+        // Función para cargar la lista de usuarios
+        function cargarUsuarios() {
+            listaUsuarios.innerHTML = "";
+            
+            if (telepizzeros.length === 0) {
+                listaUsuarios.innerHTML = "<p>No hay telepizzeros registrados</p>";
+                return;
+            }
+            
+            telepizzeros.forEach(usuario => {
+                const usuarioItem = document.createElement('div');
+                usuarioItem.className = 'usuario-item';
+                
+                usuarioItem.innerHTML = `
+                    <div>
+                        <strong>${usuario.nombre}</strong>
+                        <div>DNI: ${usuario.dni}</div>
+                    </div>
+                    <div class="botones-accion">
+                        <button class="btn btn-danger btn-small btn-eliminar" data-dni="${usuario.dni}">Eliminar</button>
+                    </div>
+                `;
+                
+                listaUsuarios.appendChild(usuarioItem);
+            });
+            
+            // Agregar event listeners a los botones de eliminar
+            document.querySelectorAll('.btn-eliminar').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const dni = this.getAttribute('data-dni');
+                    eliminarUsuario(dni);
+                });
+            });
+        }
+        
+        // Función para eliminar un usuario
+        function eliminarUsuario(dni) {
+            if (confirm("¿Estás seguro de que deseas eliminar este telepizzero?")) {
+                telepizzeros = telepizzeros.filter(u => u.dni !== dni);
+                
+                // También eliminar sus registros
+                registros = registros.filter(r => r.dni !== dni);
+                
+                // Guardar cambios
+                localStorage.setItem('telepizza_usuarios', JSON.stringify(telepizzeros));
+                localStorage.setItem('telepizza_registros', JSON.stringify(registros));
+                
+                // Actualizar la interfaz
+                cargarUsuarios();
+                cargarSelectUsuarios();
+                cargarRegistros();
+                
+                alert("Telepizzero eliminado correctamente");
+            }
+        }
+        
+        // Función para cargar el select de usuarios en la pestaña de ausencias
+        function cargarSelectUsuarios() {
+            selectUsuarioAusencia.innerHTML = "";
+            
+            telepizzeros.forEach(usuario => {
+                const option = document.createElement('option');
+                option.value = usuario.dni;
+                option.textContent = `${usuario.nombre} (${usuario.dni})`;
+                selectUsuarioAusencia.appendChild(option);
+            });
+        }
+        
+        // Función para registrar una ausencia
+        function registrarAusencia() {
+            const dni = selectUsuarioAusencia.value;
+            const fecha = fechaAusencia.value;
+            const tipo = tipoAusencia.value;
+            const motivo = motivoAusencia.value.trim();
+            
+            if (!dni || !fecha) {
+                alert("Por favor, completa todos los campos obligatorios");
+                return;
+            }
+            
+            // Buscar el usuario
+            const usuario = telepizzeros.find(u => u.dni === dni);
+            
+            // Registrar la ausencia
+            const ausencia = {
+                dni,
+                nombre: usuario.nombre,
+                fecha,
+                tipo,
+                motivo: motivo || "No especificado",
+                fechaRegistro: new Date().toLocaleString('es-ES')
+            };
+            
+            ausencias.push(ausencia);
+            
+            // Guardar en localStorage
+            localStorage.setItem('telepizza_ausencias', JSON.stringify(ausencias));
+            
+            // Actualizar la interfaz
+            cargarAusencias();
+            
+            // Limpiar campos
+            motivoAusencia.value = "";
+            
+            alert("Incidencia registrada correctamente");
+        }
+        
+        // Función para cargar la lista de ausencias
+        function cargarAusencias() {
+            listaAusencias.innerHTML = "";
+            
+            if (ausencias.length === 0) {
+                listaAusencias.innerHTML = "<p>No hay incidencias registradas</p>";
+                return;
+            }
+            
+            // Ordenar por fecha (más reciente primero)
+            const ausenciasOrdenadas = [...ausencias].sort((a, b) => {
+                return a.fecha < b.fecha ? 1 : -1;
+            });
+            
+            ausenciasOrdenadas.forEach(ausencia => {
+                const ausenciaItem = document.createElement('div');
+                ausenciaItem.className = `ausencia-item ${ausencia.tipo === 'falta' ? 'ausencia-marcada' : ''}`;
+                
+                let tipoTexto = "";
+                switch(ausencia.tipo) {
+                    case 'falta':
+                        tipoTexto = "Falta";
+                        break;
+                    case 'ausencia_justificada':
+                        tipoTexto = "Ausencia Justificada";
+                        break;
+                    case 'retraso':
+                        tipoTexto = "Retraso";
+                        break;
+                }
+                
+                ausenciaItem.innerHTML = `
+                    <div>
+                        <strong>${ausencia.nombre}</strong> (${ausencia.dni})
+                        <div>Fecha: ${ausencia.fecha} - ${tipoTexto}</div>
+                        <div>Motivo: ${ausencia.motivo}</div>
+                        <div><small>Registrado: ${ausencia.fechaRegistro}</small></div>
+                    </div>
+                    <div class="botones-accion">
+                        <button class="btn btn-danger btn-small btn-eliminar-ausencia" data-id="${ausencia.dni}-${ausencia.fecha}">Eliminar</button>
+                    </div>
+                `;
+                
+                listaAusencias.appendChild(ausenciaItem);
+            });
+            
+            // Agregar event listeners a los botones de eliminar
+            document.querySelectorAll('.btn-eliminar-ausencia').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    eliminarAusencia(id);
+                });
+            });
+        }
+        
+        // Función para eliminar una ausencia
+        function eliminarAusencia(id) {
+            if (confirm("¿Estás seguro de que deseas eliminar esta incidencia?")) {
+                const [dni, fecha] = id.split('-');
+                
+                ausencias = ausencias.filter(a => !(a.dni === dni && a.fecha === fecha));
+                
+                // Guardar cambios
+                localStorage.setItem('telepizza_ausencias', JSON.stringify(ausencias));
+                
+                // Actualizar la interfaz
+                cargarAusencias();
+                
+                alert("Incidencia eliminada correctamente");
+            }
         }
         
         // Permitir fichar con Enter
@@ -403,6 +870,9 @@
                 btnAcceder.click();
             }
         });
+        
+        // Inicializar la aplicación
+        init();
     </script>
 </body>
 </html>
